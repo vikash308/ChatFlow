@@ -14,10 +14,14 @@ const userSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    confirmPassword: {
-        type: String,
+    isVerified: {
+        type: Boolean,
+        default: false,
     },
-}, { timestamps: true }); // createdAt & updatedAt
+
+    emailOtp: String,
+    emailOtpExpiry: Date,
+}, { timestamps: true }); 
 
 const User = mongoose.model("User", userSchema);
 export default User;

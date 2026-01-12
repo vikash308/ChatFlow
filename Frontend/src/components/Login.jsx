@@ -29,6 +29,8 @@ function Login() {
         }
         localStorage.setItem("ChatApp", JSON.stringify(response.data));
         localStorage.setItem("jwt", response.data.user.token);
+        localStorage.setItem("email", response.data.user.email);
+        localStorage.setItem("verified", response.data.user.isVerified)
         setAuthUser(response.data);
       })
       .catch((error) => {

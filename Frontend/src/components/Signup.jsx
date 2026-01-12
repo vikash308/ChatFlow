@@ -2,12 +2,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import server from "../api";
 
 function Signup() {
   const [authUser, setAuthUser] = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -17,18 +18,12 @@ function Signup() {
   } = useForm();
 
   const password = watch("password", "");
-  const confirmPassword = watch("confirmPassword", "");
-
-  const validatePasswordMatch = (value) => {
-    return value === password || "Passwords do not match";
-  };
 
   const onSubmit = async (data) => {
     const userInfo = {
       fullname: data.fullname,
       email: data.email,
       password: data.password,
-      confirmPassword: data.confirmPassword,
     };
 
     await axios
@@ -38,7 +33,11 @@ function Signup() {
           toast.success("Signup successful");
         }
         localStorage.setItem("ChatApp", JSON.stringify(response.data));
+         localStorage.setItem("jwt", response.data.user.token);
+        localStorage.setItem("email", response.data.user.email);
+        localStorage.setItem("verified", response.data.user.isVerified)
         setAuthUser(response.data);
+        navigate("/")
       })
       .catch((error) => {
         if (error.response) {
@@ -108,29 +107,7 @@ function Signup() {
             <span className="text-red-400 text-sm">Password is required</span>
           )}
         </div>
-
-        {/* Confirm Password */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">
-            Confirm Password
-          </label>
-          <input
-            type="password"
-            placeholder="Re-enter password"
-            {...register("confirmPassword", {
-              required: true,
-              validate: validatePasswordMatch,
-            })}
-            className="w-full rounded-xl px-4 py-3
-            border border-purple-200
-            focus:outline-none focus:ring-2 focus:ring-purple-400"
-          />
-          {errors.confirmPassword && (
-            <span className="text-red-400 text-sm">
-              {errors.confirmPassword.message}
-            </span>
-          )}
-        </div>
+        
 
         {/* Button */}
         <input
