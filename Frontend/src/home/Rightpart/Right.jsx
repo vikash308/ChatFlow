@@ -9,9 +9,10 @@ import { CiMenuFries } from "react-icons/ci";
 function Right() {
   const { selectedConversation, setSelectedConversation } = useConversation();
 
-  useEffect(() => {
-    return setSelectedConversation(null);
-  }, [setSelectedConversation]);
+ useEffect(() => {
+   setSelectedConversation(null);
+ }, [setSelectedConversation]);
+
 
   return (
     <div

@@ -3,37 +3,48 @@ import http from "http";
 import express from "express";
 
 const app = express();
-
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
 
-// realtime message code goes here
+const users = {}; 
 export const getReceiverSocketId = (receiverId) => {
   return users[receiverId];
 };
 
-const users = {};
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
 
-// used to listen events on server side.
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+
   const userId = socket.handshake.query.userId;
+
   if (userId) {
     users[userId] = socket.id;
-    console.log("Hello ", users);
+    socket.userId = userId; 
   }
-  // used to send the events to all connected users
+
   io.emit("getOnlineUsers", Object.keys(users));
 
-  // used to listen client side events emitted by server side (server & client)
+  socket.on("typing", ({ receiverId }) => {
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) io.to(receiverSocketId).emit("typing");
+  });
+
+  socket.on("stopTyping", ({ receiverId }) => {
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) io.to(receiverSocketId).emit("stopTyping");
+  });
+
   socket.on("disconnect", () => {
     console.log("a user disconnected", socket.id);
-    delete users[userId];
+
+    if (socket.userId) delete users[socket.userId];
+
     io.emit("getOnlineUsers", Object.keys(users));
   });
 });

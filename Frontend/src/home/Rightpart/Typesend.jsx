@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { IoSend } from "react-icons/io5";
 import useSendMessage from "../../context/useSendMessage.js";
+import { useSocketContext } from "../../context/SocketContext.jsx";
+import useConversation from "../../zustand/useConversation.js";
+
 
 function Typesend() {
   const [message, setMessage] = useState("");
   const { loading, sendMessages } = useSendMessage();
+  const { socket } = useSocketContext();
+  const { selectedConversation } = useConversation();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
     await sendMessages(message);
+    socket?.emit("stopTyping", { receiverId: selectedConversation?._id });
+
     setMessage("");
   };
 
@@ -27,7 +35,20 @@ function Typesend() {
           type="text"
           placeholder="Type a message..."
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+
+            if (!socket || !selectedConversation?._id) return;
+
+            socket.emit("typing", { receiverId: selectedConversation._id });
+            if (window.typingTimeout) clearTimeout(window.typingTimeout);
+
+            window.typingTimeout = setTimeout(() => {
+              socket.emit("stopTyping", {
+                receiverId: selectedConversation._id,
+              });
+            }, 1000);
+          }}
           className="
           flex-1 rounded-2xl px-4 py-3
           bg-white/80 text-gray-700 placeholder-gray-400

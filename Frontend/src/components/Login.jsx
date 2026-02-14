@@ -1,5 +1,5 @@
 import axios from "axios";
-import React from "react";
+import React, {useState} from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthProvider";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import server from "../api";
 
 function Login() {
   const [authUser, setAuthUser] = useAuth();
+  const [loading, setLoading] = useState(false); 
 
   const {
     register,
@@ -20,6 +21,7 @@ function Login() {
       email: data.email,
       password: data.password,
     };
+    setLoading(true);
 
     axios
       .post(`${server}/api/user/login`, userInfo)
@@ -37,6 +39,9 @@ function Login() {
         if (error.response) {
           toast.error("Error: " + error.response.data.message);
         }
+      })
+      .finally(()=>{
+        setLoading(false);
       });
   };
 
@@ -87,14 +92,15 @@ function Login() {
         </div>
 
         {/* Button */}
-        <input
+        <button
           type="submit"
-          value="Login"
+          disabled = {loading}
+          
           className="w-full py-3 rounded-xl text-white font-semibold
           bg-gradient-to-r from-purple-500 to-pink-500
           hover:scale-[1.02] hover:shadow-xl
           transition-all duration-300 cursor-pointer"
-        />
+        >  {loading ? "Logging..." : "Login"}</button>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600">

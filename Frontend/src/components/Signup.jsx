@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useAuth } from "../context/AuthProvider";
@@ -8,6 +8,7 @@ import server from "../api";
 
 function Signup() {
   const [authUser, setAuthUser] = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -25,6 +26,7 @@ function Signup() {
       email: data.email,
       password: data.password,
     };
+    setLoading(true)
 
     await axios
       .post(server + "/api/user/signup", userInfo)
@@ -43,7 +45,10 @@ function Signup() {
         if (error.response) {
           toast.error("Error: " + error.response.data.error);
         }
-      });
+      })
+      .finally(()=>{
+        setLoading(false)
+      })
   };
 
   return (
@@ -54,9 +59,7 @@ function Signup() {
       >
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-pink-600">
-             Create Account
-          </h1>
+          <h1 className="text-3xl font-bold text-pink-600">Create Account</h1>
           <p className="text-gray-600 text-sm">Join and start chatting</p>
         </div>
 
@@ -107,17 +110,19 @@ function Signup() {
             <span className="text-red-400 text-sm">Password is required</span>
           )}
         </div>
-        
 
         {/* Button */}
-        <input
+        <button
           type="submit"
-          value="Sign Up"
+          disabled={loading}
           className="w-full py-3 rounded-xl text-white font-semibold
           bg-gradient-to-r from-purple-500 to-pink-500
           hover:scale-[1.02] hover:shadow-xl
           transition-all duration-300 cursor-pointer"
-        />
+        >
+          {" "}
+          {loading ? "Sign in..." : "SignUp"}
+        </button>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-600">

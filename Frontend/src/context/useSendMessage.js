@@ -4,7 +4,7 @@ import axios from "axios";
 import server from "../api.js";
 const useSendMessage = () => {
   const [loading, setLoading] = useState(false);
-  const { messages, setMessage, selectedConversation } = useConversation();
+  const { setMessage, selectedConversation } = useConversation();
   const token = localStorage.getItem("jwt");
   const sendMessages = async (message) => {
     setLoading(true);
@@ -17,7 +17,7 @@ const useSendMessage = () => {
         }
       }
       );
-      setMessage([...messages, res.data]);
+      setMessage((prev) => [...prev, res.data]);
       setLoading(false);
     } catch (error) {
       console.log("Error in send messages", error);

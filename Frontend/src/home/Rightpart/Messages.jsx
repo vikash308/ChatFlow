@@ -3,10 +3,16 @@ import Message from "./Message";
 import useGetMessage from "../../context/useGetMessage.js";
 import Loading from "../../components/Loading.jsx";
 import useGetSocketMessage from "../../context/useGetSocketMessage.js";
+import useTypingIndicator from "../../context/useTypingIndicator.js";
+import useConversation from "../../zustand/useConversation.js";
+
 
 function Messages() {
   const { loading, messages } = useGetMessage();
-  useGetSocketMessage(); // listening incoming messages
+  useGetSocketMessage(); 
+  useTypingIndicator();
+  const { typingUser } = useConversation();
+
 
   const lastMsgRef = useRef();
 
@@ -42,6 +48,13 @@ function Messages() {
             <p className="text-gray-600 text-sm text-center">
               👋 Say hi to start the conversation
             </p>
+          </div>
+        </div>
+      )}
+      {typingUser && (
+        <div className="px-4 py-2">
+          <div className="inline-block bg-white/70 backdrop-blur-xl px-4 py-2 rounded-2xl shadow text-sm text-gray-600">
+            Typing...
           </div>
         </div>
       )}

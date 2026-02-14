@@ -17,6 +17,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (authUser) {
       const socket = io(server, {
+        transports: ["websocket"],
         query: {
           userId: authUser.user._id,
         },
@@ -25,10 +26,10 @@ export const SocketProvider = ({ children }) => {
       socket.on("getOnlineUsers", (users) => {
         setOnlineUsers(users);
       });
-      return () => socket.close();
+      return () => socket.disconnect();
     } else {
       if (socket) {
-        socket.close();
+        socket.disconnect();
         setSocket(null);
       }
     }
