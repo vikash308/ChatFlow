@@ -1,45 +1,36 @@
-import nodemailer from "nodemailer";
-
-const createTransporter = () => {
-    // If Brevo credentials exist → use Brevo (Production)
-    if (process.env.BREVO_USER && process.env.BREVO_PASS) {
-        return nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.BREVO_USER,
-                pass: process.env.BREVO_PASS,
-            },
-        });
-    }
-
-    // Otherwise fallback to Gmail (Local)
-    return nodemailer.createTransport({
-        service: "gmail",
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-};
+import axios from "axios";
 
 const sendEmail = async (to, subject, text) => {
     try {
-        const transporter = createTransporter();
+        const response = await axios.post(
+            "https://api.brevo.com/v3/smtp/email",
+            {
+                sender: {
+                    name: "ChatFlow",
+                    email: process.env.BREVO_SENDER,
+                },
+                to: [
+                    {
+                        email: to,
+                    },
+                ],
+                subject: subject,
+                textContent: text,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "api-key": process.env.BREVO_API_KEY,
+                },
+            }
+        );
 
-        await transporter.sendMail({
-            from: `"ChatFlow" <${process.env.BREVO_USER || process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            text,
-        });
-
-        console.log("Email sent successfully");
+        console.log("Email sent:", response.data);
     } catch (error) {
-        console.error("Send Email Error:", error);
+        console.error(
+            "Brevo API Error:",
+            error.response?.data || error.message
+        );
         throw error;
     }
 };

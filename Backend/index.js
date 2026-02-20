@@ -10,6 +10,7 @@ import { app, server } from "./SocketIO/server.js";
 
 dotenv.config();
 
+
 // middleware
 app.use(express.json());
 app.use(cookieParser());
