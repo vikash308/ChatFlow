@@ -51,16 +51,16 @@ function Main() {
   }, [authUser, navigate, setAuthUser]);
 
   return (
-    <div className="drawer md:drawer-open bg-slate-900">
+    <div className="drawer md:drawer-open h-[100dvh] overflow-hidden bg-slate-900">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
 
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col h-full overflow-hidden">
         <Right />
       </div>
 
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-        <div className="w-80 min-h-full bg-black border-r border-slate-800">
+        <div className="w-80 h-full bg-black border-r border-slate-800">
           <Left />
         </div>
       </div>

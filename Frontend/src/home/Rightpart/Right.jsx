@@ -16,16 +16,18 @@ function Right() {
 
   return (
     <div
-      className="w-full h-screen flex flex-col
+      className="w-full h-full flex flex-col
       bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100
-      text-gray-700"
+      text-gray-700 overflow-hidden"
     >
       {!selectedConversation ? (
         <NoChatSelected />
       ) : (
         <>
           {/* Header */}
-          <Chatuser />
+          <div className="shrink-0">
+            <Chatuser />
+          </div>
 
           {/* Messages (ONLY scroll here) */}
           <div className="flex-1 overflow-hidden">

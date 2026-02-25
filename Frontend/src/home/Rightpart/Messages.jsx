@@ -29,10 +29,9 @@ function Messages() {
   return (
     <div
       className="
-      flex-1 overflow-y-auto px-3 py-2
-      bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100
+      h-full overflow-y-auto px-3 py-2
+bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100
       "
-      style={{ minHeight: "calc(92vh - 8vh)" }}
     >
       {loading ? (
         <Loading />
