@@ -56,14 +56,6 @@ const NoChatSelected = () => {
       className="relative w-full h-full
       bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100"
     >
-      {/* Mobile menu */}
-      <label
-        htmlFor="my-drawer-2"
-        className="lg:hidden absolute top-4 left-4 cursor-pointer"
-      >
-        <CiMenuFries className="text-purple-500 text-2xl" />
-      </label>
-
       {/* Center content */}
       <div className="flex h-full items-center justify-center px-4">
         <div

@@ -6,12 +6,18 @@ import server from "../api";
 
 import Left from "./Leftpart/Left";
 import Right from "./Rightpart/Right";
+import useGetSocketMessage from "../context/useGetSocketMessage";
+import useConversation from "../zustand/useConversation";
 
 function Main() {
   const [authUser, setAuthUser] = useAuth();
+  const { selectedConversation } = useConversation();
   const navigate = useNavigate();
   const checkedRef = useRef(false);
   const email = localStorage.getItem("email")
+
+  // Listen to sockets globally for unread counts and notifications
+  useGetSocketMessage();
 
   if (!authUser) {
     return <Navigate to="/login" />;
@@ -51,18 +57,25 @@ function Main() {
   }, [authUser, navigate, setAuthUser]);
 
   return (
-    <div className="drawer md:drawer-open h-[100dvh] overflow-hidden bg-slate-900">
-      <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-
-      <div className="drawer-content flex flex-col h-full overflow-hidden">
-        <Right />
+    <div className="flex h-screen w-full overflow-hidden bg-slate-900">
+      {/* Left Sidebar - Hidden on mobile if a chat is open */}
+      <div
+        className={`
+          ${selectedConversation ? "hidden md:flex" : "flex"}
+          w-full md:w-[350px] lg:w-[400px] h-full
+        `}
+      >
+        <Left />
       </div>
 
-      <div className="drawer-side">
-        <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-        <div className="w-80 h-full bg-black border-r border-slate-800">
-          <Left />
-        </div>
+      {/* Right Chat Area - Hidden on mobile if no chat is open */}
+      <div
+        className={`
+          ${!selectedConversation ? "hidden md:flex" : "flex"}
+          flex-1 h-full
+        `}
+      >
+        <Right />
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
 import User from "../models/user.model.js";
+import Message from "../models/message.model.js";
+import Conversation from "../models/conversation.model.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import { generateOtp } from "../utils/generateOtp.js";
@@ -10,7 +12,7 @@ import { createHash } from "crypto";
 export const signup = async (req, res) => {
   const { fullname, email, password } = req.body;
   try {
-    
+
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ error: "User already registered" });
@@ -24,8 +26,8 @@ export const signup = async (req, res) => {
     await newUser.save();
     if (newUser) {
       const token = jwt.sign({ userId: newUser._id }, process.env.JWT_TOKEN, {
-          expiresIn: "10d",
-        });
+        expiresIn: "10d",
+      });
       res.status(201).json({
         message: "User created successfully",
         user: {
@@ -33,7 +35,7 @@ export const signup = async (req, res) => {
           fullname: newUser.fullname,
           email: newUser.email,
           token,
-          isVerified:newUser.isVerified
+          isVerified: newUser.isVerified
         },
       });
     }
@@ -46,7 +48,7 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({message: "signup first"});
+    if (!user) return res.status(400).json({ message: "signup first" });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!user || !isMatch) {
       return res.status(400).json({ error: "Invalid user credential" });
@@ -61,7 +63,7 @@ export const login = async (req, res) => {
         fullname: user.fullname,
         email: user.email,
         token,
-        isVerified:user.isVerified
+        isVerified: user.isVerified
       },
     });
   } catch (error) {
@@ -84,8 +86,76 @@ export const allUsers = async (req, res) => {
     const loggedInUser = req.user._id;
     const filteredUsers = await User.find({
       _id: { $ne: loggedInUser },
-    }).select("-password");
-    res.status(201).json(filteredUsers);
+    }).select("-password").lean();
+
+    // Fetch unread messages
+    const unreadCounts = await Message.aggregate([
+      {
+        $match: {
+          receiverId: loggedInUser,
+          isRead: false
+        }
+      },
+      {
+        $group: {
+          _id: "$senderId",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const unreadMap = {};
+    unreadCounts.forEach(item => {
+      unreadMap[item._id.toString()] = item.count;
+    });
+
+    // Fetch last message time for each user interaction using Message aggregation
+    const lastMessages = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { senderId: loggedInUser },
+            { receiverId: loggedInUser }
+          ]
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", loggedInUser] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessageTime: { $first: "$createdAt" }
+        }
+      }
+    ]);
+
+    const lastMessageMap = {};
+    lastMessages.forEach(item => {
+      lastMessageMap[item._id.toString()] = new Date(item.lastMessageTime).getTime();
+    });
+
+    const usersWithExtraData = filteredUsers.map(user => ({
+      ...user,
+      unreadCount: unreadMap[user._id.toString()] || 0,
+      lastMessageTime: lastMessageMap[user._id.toString()] || 0
+    }));
+
+    // Sort users: First by lastMessageTime (descending), then alphabetically
+    usersWithExtraData.sort((a, b) => {
+      if (b.lastMessageTime !== a.lastMessageTime) {
+        return b.lastMessageTime - a.lastMessageTime;
+      }
+      return a.fullname.localeCompare(b.fullname);
+    });
+
+    res.status(201).json(usersWithExtraData);
   } catch (error) {
     console.log("Error in allUsers Controller: " + error);
   }
@@ -113,7 +183,7 @@ export const sendOtp = async (req, res) => {
       .update(otp)
       .digest("hex");
     user.emailOtp = hashedOtp;
-    user.emailOtpExpiry = Date.now() + 10 * 60 * 1000; 
+    user.emailOtpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     await sendEmail(
@@ -163,7 +233,7 @@ export const verifyEmailOtp = async (req, res) => {
 
     res.status(200).json({
       message: "Email verified successfully",
-      isVerified:user.isVerified
+      isVerified: user.isVerified
     });
   } catch (error) {
     console.error("Verify OTP Error:", error);

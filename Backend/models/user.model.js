@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
 
     emailOtp: String,
     emailOtpExpiry: Date,
-}, { timestamps: true }); 
+}, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
 export default User;

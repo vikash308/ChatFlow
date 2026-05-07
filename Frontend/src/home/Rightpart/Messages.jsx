@@ -2,14 +2,12 @@ import React, { useEffect, useRef } from "react";
 import Message from "./Message";
 import useGetMessage from "../../context/useGetMessage.js";
 import Loading from "../../components/Loading.jsx";
-import useGetSocketMessage from "../../context/useGetSocketMessage.js";
 import useTypingIndicator from "../../context/useTypingIndicator.js";
 import useConversation from "../../zustand/useConversation.js";
 
 
 function Messages() {
   const { loading, messages } = useGetMessage();
-  useGetSocketMessage(); 
   useTypingIndicator();
   const { typingUser } = useConversation();
 

@@ -1,11 +1,11 @@
 import React from "react";
 import useConversation from "../../zustand/useConversation.js";
 import { useSocketContext } from "../../context/SocketContext.jsx";
-import { CiMenuFries } from "react-icons/ci";
+import { IoArrowBack } from "react-icons/io5";
 import profile from "../../../public/user.jpg";
 
 function Chatuser() {
-  const { selectedConversation } = useConversation();
+  const { selectedConversation, setSelectedConversation } = useConversation();
   const { onlineUsers } = useSocketContext();
 
   const getOnlineUsersStatus = (userId) => {
@@ -25,10 +25,13 @@ function Chatuser() {
       transition-all duration-300
       "
     >
-      {/* Mobile menu */}
-      <label htmlFor="my-drawer-2" className="lg:hidden cursor-pointer">
-        <CiMenuFries className="text-purple-500 text-2xl" />
-      </label>
+      {/* Mobile Back Button */}
+      <div 
+        className="md:hidden cursor-pointer p-1 hover:bg-gray-100 rounded-full transition-colors"
+        onClick={() => setSelectedConversation(null)}
+      >
+        <IoArrowBack className="text-purple-600 text-2xl" />
+      </div>
 
       {/* User info */}
       <div className="flex items-center gap-3">

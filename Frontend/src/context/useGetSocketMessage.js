@@ -5,10 +5,15 @@ import sound from "../assets/notification.mp3";
 
 const useGetSocketMessage = () => {
   const { socket } = useSocketContext();
-  const { setMessage } = useConversation();
+  const { setMessage, selectedConversation, incrementUnreadCount, updateLastMessageTime } = useConversation();
 
   useEffect(() => {
     if (!socket) return;
+
+    // Request notification permissions
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
 
     // ✅ New message
     const onNewMessage = (newMessage) => {
@@ -17,7 +22,29 @@ const useGetSocketMessage = () => {
         notification.play();
       } catch (e) { }
 
-      setMessage((prev) => [...prev, newMessage]);
+      if (selectedConversation && selectedConversation._id === newMessage.senderId) {
+        setMessage((prev) => [...prev, newMessage]);
+      } else {
+        incrementUnreadCount(newMessage.senderId);
+      }
+      updateLastMessageTime(newMessage.senderId);
+
+      // 🔔 Native Browser Notification
+      if ("Notification" in window && Notification.permission === "granted") {
+        // Only show notification if the tab is hidden or we are not in that specific chat
+        if (document.hidden || !selectedConversation || selectedConversation._id !== newMessage.senderId) {
+          const browserNotification = new Notification("New Message", {
+            body: newMessage.message,
+            icon: "/user.jpg",
+          });
+
+          // Focus the window when clicked
+          browserNotification.onclick = () => {
+            window.focus();
+            browserNotification.close();
+          };
+        }
+      }
     };
 
     // ✅ Delete message realtime
@@ -40,7 +67,7 @@ const useGetSocketMessage = () => {
       socket.off("newMessage", onNewMessage);
       socket.off("messageDeleted", onMessageDeleted);
     };
-  }, [socket, setMessage]);
+  }, [socket, setMessage, selectedConversation, incrementUnreadCount]);
 };
 
 export default useGetSocketMessage;
