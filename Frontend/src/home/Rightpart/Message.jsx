@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import useDeleteMessage from "../../context/useDeleteMessage.js";
+import { IoCheckmarkDoneSharp } from "react-icons/io5";
 
 function Message({ message }) {
   const authUser = JSON.parse(localStorage.getItem("ChatApp"));
@@ -23,20 +24,10 @@ function Message({ message }) {
 
   const isDeletedForEveryone = message.isDeleted;
 
-  const handleDeleteForMe = async () => {
-    setMenuOpen(false);
-    await deleteForMe(message._id);
-  };
-
-  const handleDeleteForEveryone = async () => {
-    setMenuOpen(false);
-    await deleteForEveryone(message._id);
-  };
-
   return (
-    <div className="px-4 py-1">
+    <div className="px-4 py-1.5 animate-in slide-in-from-bottom-1 duration-300">
       <div className={`flex ${itsMe ? "justify-end" : "justify-start"}`}>
-        <div className="relative max-w-[70%]">
+        <div className="relative max-w-[75%] md:max-w-[60%]">
           {/* Message bubble */}
           <div
             onContextMenu={(e) => {
@@ -45,27 +36,32 @@ function Message({ message }) {
               setMenuOpen(true);
             }}
             className={`
-              px-4 py-2 rounded-2xl shadow-md backdrop-blur-lg
-              cursor-pointer select-text
+              px-5 py-3 shadow-xl
+              cursor-pointer select-text transition-all duration-300
               ${
                 itsMe
-                  ? "bg-gradient-to-tl from-pink-300 via-yellow-200 to-green-300 text-gray-800 rounded-br-none"
-                  : "bg-white/70 text-gray-700 rounded-bl-none"
+                  ? "chat-bubble-outgoing"
+                  : "chat-bubble-incoming text-white/90"
               }
             `}
           >
             {/* Message text */}
             <p
-              className={`text-sm leading-relaxed ${
-                isDeletedForEveryone ? "italic text-gray-500" : ""
+              className={`text-[15px] leading-relaxed font-medium ${
+                isDeletedForEveryone ? "italic text-white/40" : ""
               }`}
             >
               {message.message}
             </p>
 
-            {/* Time */}
-            <div className="text-[11px] mt-1 text-right text-gray-600">
+            {/* Footer with time */}
+            <div className={`text-[10px] mt-1.5 flex items-center gap-1.5 font-bold uppercase tracking-widest ${itsMe ? "text-white/60 justify-end" : "text-white/30 justify-start"}`}>
               {formattedTime}
+              {itsMe && (
+                <IoCheckmarkDoneSharp 
+                  className={`text-sm ${message.isRead ? "text-sky-400" : "text-white/30"}`} 
+                />
+              )}
             </div>
           </div>
 
@@ -80,32 +76,44 @@ function Message({ message }) {
 
               <div
                 className={`
-                  absolute z-50 mt-2 w-48 rounded-xl shadow-lg
-                  bg-white border border-gray-200 overflow-hidden
+                  absolute z-50 mt-3 w-56 rounded-[20px] shadow-2xl
+                  glass-card overflow-hidden border border-white/10
+                  animate-in fade-in zoom-in-95 duration-200
                   ${itsMe ? "right-0" : "left-0"}
                 `}
               >
+                <div className="px-4 py-2 border-b border-white/5 bg-white/[0.02]">
+                   <span className="text-[10px] font-black uppercase text-indigo-400 tracking-[0.2em]">Message Actions</span>
+                </div>
                 <button
-                  onClick={handleDeleteForMe}
-                  className="w-full text-left px-4 py-3 text-sm hover:bg-gray-100"
+                  onClick={async () => {
+                    setMenuOpen(false);
+                    await deleteForMe(message._id);
+                  }}
+                  className="w-full text-left px-5 py-4 text-sm font-semibold text-white/70 hover:text-white hover:bg-white/5 transition-all flex items-center justify-between group"
                 >
                   Delete for me
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity">🗑️</span>
                 </button>
 
                 {itsMe && (
                   <button
-                    onClick={handleDeleteForEveryone}
-                    className="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 text-red-500"
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      await deleteForEveryone(message._id);
+                    }}
+                    className="w-full text-left px-5 py-4 text-sm font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all border-t border-white/5 flex items-center justify-between group"
                   >
                     Delete for everyone
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">🔥</span>
                   </button>
                 )}
 
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="w-full text-left px-4 py-3 text-sm hover:bg-gray-100"
+                  className="w-full text-center py-4 text-[10px] font-black uppercase tracking-[0.3em] text-white/20 hover:text-white/40 transition-all bg-black/20"
                 >
-                  Cancel
+                  Close Menu
                 </button>
               </div>
             </>

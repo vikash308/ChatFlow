@@ -32,21 +32,23 @@ function Profile() {
   if (!authUser) return null;
 
   return (
-    <div className="px-4 py-3 border-t border-purple-200 bg-white/50 backdrop-blur-sm">
+    <div className="px-6 py-6 border-b border-white/5 bg-white/[0.02] backdrop-blur-md">
       <div 
         className="flex items-center justify-between cursor-pointer group"
         onClick={() => setShowDetails(!showDetails)}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="relative">
-            <FaUserCircle className="text-4xl text-purple-500" />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+            <div className="w-12 h-12 rounded-full premium-gradient flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <FaUserCircle className="text-3xl" />
+            </div>
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0b1326] rounded-full animate-pulse"></span>
           </div>
           <div className="leading-tight">
-            <h2 className="text-sm font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+            <h2 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
               {authUser.user?.fullname || "My Profile"}
             </h2>
-            <p className="text-xs text-gray-500">Active Now</p>
+            <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mt-0.5">Online</p>
           </div>
         </div>
         
@@ -57,25 +59,25 @@ function Profile() {
           }}
           disabled={loading}
           title="Logout"
-          className="p-2 rounded-full hover:bg-red-50 text-red-400 hover:text-red-600 transition-all duration-300"
+          className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all duration-300 border border-red-500/10"
         >
-          <BiLogOutCircle className={`text-2xl ${loading ? "animate-spin" : ""}`} />
+          <BiLogOutCircle className={`text-xl ${loading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {showDetails && (
-        <div className="mt-3 p-3 bg-white/80 rounded-xl shadow-inner animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="space-y-2">
+        <div className="mt-4 p-4 glass-card rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-3">
             <div>
-              <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Full Name</label>
-              <p className="text-sm text-gray-700 font-medium">{authUser.user?.fullname}</p>
+              <label className="text-[10px] uppercase font-bold text-indigo-400 tracking-[0.15em]">Full Name</label>
+              <p className="text-sm text-white font-medium mt-0.5">{authUser.user?.fullname}</p>
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Email Address</label>
-              <p className="text-sm text-gray-700 font-medium break-all">{authUser.user?.email}</p>
+              <label className="text-[10px] uppercase font-bold text-indigo-400 tracking-[0.15em]">Email Address</label>
+              <p className="text-sm text-white/70 font-medium break-all mt-0.5">{authUser.user?.email}</p>
             </div>
             <div className="pt-1">
-               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+               <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
                 Verified Account
               </span>
             </div>

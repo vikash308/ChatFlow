@@ -10,28 +10,24 @@ function Left() {
 
   return (
     <div
-      className="w-full h-full flex flex-col
-     bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100
-      border-r border-purple-200
-      text-gray-700 relative"
+      className="w-full h-full flex flex-col text-[#dae2fd] relative"
     >
       <Profile />
       
-      <div className="flex items-center justify-between px-4 py-2 mt-1">
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Recent Chats</h2>
+      <div className="flex items-center justify-between px-6 py-4">
+        <h2 className="text-xs font-bold text-indigo-400 uppercase tracking-[0.2em]">Recent Chats</h2>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="p-2 bg-white rounded-full shadow-sm hover:shadow-md hover:scale-110 transition-all text-purple-600 border border-purple-100"
+          className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl transition-all text-indigo-400 border border-indigo-500/20 group"
           title="New Chat"
         >
-          <FaUserPlus size={16} />
+          <FaUserPlus size={18} className="group-hover:scale-110 transition-transform" />
         </button>
       </div>
 
       <Search />
       <div
-        className=" flex-1  overflow-y-auto"
-        style={{ minHeight: "calc(84vh - 10vh)" }}
+        className="flex-1 overflow-y-auto px-2"
       >
         <Users />
       </div>

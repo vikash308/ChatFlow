@@ -2,27 +2,42 @@ import React from "react";
 
 function Loading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100">
-      {/* Glass Card */}
-      <div className="w-72 rounded-3xl bg-white/70 backdrop-blur-xl shadow-2xl p-6 flex flex-col gap-5">
-        {/* Avatar Skeleton */}
+    <div className="w-full h-full flex items-center justify-center p-4">
+      {/* Glass Loading Card */}
+      <div className="w-full max-w-sm glass-card rounded-[2.5rem] p-8 flex flex-col gap-8 animate-in fade-in duration-700">
+        
+        {/* Header Skeleton */}
         <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-300 via-pink-300 to-orange-300 animate-pulse" />
+          <div className="h-12 w-12 rounded-full bg-white/[0.05] border border-white/5 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent animate-shimmer" />
+          </div>
           <div className="flex flex-col gap-2 flex-1">
-            <div className="h-3 w-24 rounded-full bg-purple-200 animate-pulse" />
-            <div className="h-3 w-16 rounded-full bg-pink-200 animate-pulse" />
+            <div className="h-3 w-24 rounded-full bg-white/[0.05] relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent animate-shimmer" />
+            </div>
+            <div className="h-2 w-16 rounded-full bg-white/[0.03] relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-500/10 to-transparent animate-shimmer" />
+            </div>
           </div>
         </div>
 
-        {/* Chat Bubble Skeleton */}
-        <div className="space-y-3">
-          <div className="h-4 w-full rounded-xl bg-gradient-to-r from-purple-200 to-pink-200 animate-pulse" />
-          <div className="h-4 w-5/6 rounded-xl bg-gradient-to-r from-pink-200 to-orange-200 animate-pulse" />
-          <div className="h-4 w-3/4 rounded-xl bg-gradient-to-r from-purple-200 to-pink-200 animate-pulse" />
+        {/* Chat Bubbles Skeletons */}
+        <div className="space-y-4">
+          <div className="h-4 w-full rounded-2xl bg-white/[0.03] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-shimmer" />
+          </div>
+          <div className="h-4 w-[90%] rounded-2xl bg-white/[0.03] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-shimmer" />
+          </div>
+          <div className="h-4 w-[75%] rounded-2xl bg-white/[0.03] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent animate-shimmer" />
+          </div>
         </div>
 
         {/* Input Skeleton */}
-        <div className="h-10 w-full rounded-full bg-gradient-to-r from-purple-300 via-pink-300 to-orange-300 animate-pulse" />
+        <div className="h-12 w-full rounded-2xl bg-white/[0.02] border border-white/5 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/5 to-transparent animate-shimmer" />
+        </div>
       </div>
     </div>
   );

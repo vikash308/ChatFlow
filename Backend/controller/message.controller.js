@@ -28,9 +28,13 @@ export const sendMessage = async (req, res) => {
     // await conversation.save()
     // await newMessage.save();
     await Promise.all([conversation.save(), newMessage.save()]); // run parallel
+    
+    // Populate sender info for the socket emission
+    const populatedMessage = await newMessage.populate("senderId", "fullname");
+
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
     }
     res.status(201).json(newMessage);
   } catch (error) {

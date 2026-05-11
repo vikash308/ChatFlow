@@ -57,22 +57,27 @@ function Main() {
   }, [authUser, navigate, setAuthUser]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-900">
-      {/* Left Sidebar - Hidden on mobile if a chat is open */}
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#060e20] relative items-stretch">
+      {/* Dynamic Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full"></div>
+
+      {/* Left Sidebar */}
       <div
         className={`
           ${selectedConversation ? "hidden md:flex" : "flex"}
-          w-full md:w-[350px] lg:w-[400px] h-full
+          w-full md:w-[350px] lg:w-[400px] h-full z-10
+          glass-pane flex-col border-r border-white/5
         `}
       >
         <Left />
       </div>
 
-      {/* Right Chat Area - Hidden on mobile if no chat is open */}
+      {/* Right Chat Area */}
       <div
         className={`
           ${!selectedConversation ? "hidden md:flex" : "flex"}
-          flex-1 h-full
+          flex-1 h-full z-10 overflow-hidden
         `}
       >
         <Right />

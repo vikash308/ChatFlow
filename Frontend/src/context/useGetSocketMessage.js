@@ -6,48 +6,73 @@ import sound from "../assets/notification.mp3";
 const useGetSocketMessage = () => {
   const { socket } = useSocketContext();
   const { setMessage, selectedConversation, incrementUnreadCount, updateLastMessageTime } = useConversation();
+  const authUser = JSON.parse(localStorage.getItem("ChatApp"));
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !authUser) return;
 
     // Request notification permissions
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
 
+    const showNotification = (newMessage, senderId, senderName) => {
+      if (document.hidden || !selectedConversation || selectedConversation._id !== senderId) {
+        const browserNotification = new Notification(senderName, {
+          body: newMessage.message,
+          icon: "/user.jpg",
+          badge: "/user.jpg",
+          tag: senderId,
+          renotify: true
+        });
+
+        browserNotification.onclick = () => {
+          window.focus();
+          browserNotification.close();
+        };
+      }
+    };
+
     // ✅ New message
     const onNewMessage = (newMessage) => {
+      const senderId = newMessage.senderId._id || newMessage.senderId;
+      const senderName = newMessage.senderId.fullname || "New Message";
+
       try {
-        const notification = new Audio(sound);
-        notification.play();
+        const audio = new Audio(sound);
+        audio.play().catch(e => console.log("Autoplay blocked"));
       } catch (e) { }
 
-      if (selectedConversation && selectedConversation._id === newMessage.senderId) {
+      if (selectedConversation && selectedConversation._id === senderId) {
+        newMessage.isRead = true;
+        socket.emit("markAsRead", { senderId, receiverId: authUser.user._id });
         setMessage((prev) => [...prev, newMessage]);
       } else {
-        incrementUnreadCount(newMessage.senderId);
+        incrementUnreadCount(senderId);
       }
-      updateLastMessageTime(newMessage.senderId);
+      updateLastMessageTime(senderId);
 
-      // 🔔 Native Browser Notification
-      if ("Notification" in window && Notification.permission === "granted") {
-        // Only show notification if the tab is hidden or we are not in that specific chat
-        if (document.hidden || !selectedConversation || selectedConversation._id !== newMessage.senderId) {
-          const browserNotification = new Notification("New Message", {
-            body: newMessage.message,
-            icon: "/user.jpg",
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          showNotification(newMessage, senderId, senderName);
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then(permission => {
+            if (permission === "granted") showNotification(newMessage, senderId, senderName);
           });
-
-          // Focus the window when clicked
-          browserNotification.onclick = () => {
-            window.focus();
-            browserNotification.close();
-          };
         }
       }
     };
 
-    // ✅ Delete message realtime
+    // ✅ Messages Seen Realtime
+    const onMessagesSeen = ({ receiverId }) => {
+      if (selectedConversation && selectedConversation._id === receiverId) {
+        setMessage((prev) =>
+          prev.map((m) => ({ ...m, isRead: true }))
+        );
+      }
+    };
+
+    // ✅ Message Deleted Realtime
     const onMessageDeleted = ({ messageId, deleteType }) => {
       if (deleteType === "everyone") {
         setMessage((prev) =>
@@ -60,14 +85,24 @@ const useGetSocketMessage = () => {
       }
     };
 
+    // Emit markAsRead when opening a conversation
+    if (selectedConversation) {
+      socket.emit("markAsRead", {
+        senderId: selectedConversation._id,
+        receiverId: authUser.user._id
+      });
+    }
+
     socket.on("newMessage", onNewMessage);
     socket.on("messageDeleted", onMessageDeleted);
+    socket.on("messagesSeen", onMessagesSeen);
 
     return () => {
       socket.off("newMessage", onNewMessage);
       socket.off("messageDeleted", onMessageDeleted);
+      socket.off("messagesSeen", onMessagesSeen);
     };
-  }, [socket, setMessage, selectedConversation, incrementUnreadCount]);
+  }, [socket, setMessage, selectedConversation, incrementUnreadCount, authUser?.user?._id]);
 };
 
 export default useGetSocketMessage;

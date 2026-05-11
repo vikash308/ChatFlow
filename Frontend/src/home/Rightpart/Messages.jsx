@@ -12,46 +12,56 @@ function Messages() {
   const { typingUser } = useConversation();
 
 
-  const lastMsgRef = useRef();
+  const containerRef = useRef();
 
   useEffect(() => {
-    setTimeout(() => {
-      if (lastMsgRef.current) {
-        lastMsgRef.current.scrollIntoView({
-          behavior: "smooth",
-        });
+    const scrollToBottom = () => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
       }
-    }, 100);
-  }, [messages]);
+    };
+    
+    // Scroll immediately and after a short delay for reliability
+    scrollToBottom();
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [messages, loading, typingUser]);
 
   return (
     <div
-      className="
-      h-full overflow-y-auto px-3 py-2
-bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100
-      "
+      ref={containerRef}
+      className="h-full w-full overflow-y-auto px-4 py-6 scroll-smooth"
     >
       {loading ? (
-        <Loading />
+        <div className="flex items-center justify-center h-full">
+           <Loading />
+        </div>
       ) : messages.length > 0 ? (
         messages.map((message) => (
-          <div key={message._id} ref={lastMsgRef}>
+          <div key={message._id}>
             <Message message={message} />
           </div>
         ))
       ) : (
         <div className="flex items-center justify-center h-full">
-          <div className="bg-white/70 backdrop-blur-xl px-6 py-4 rounded-2xl shadow-md">
-            <p className="text-gray-600 text-sm text-center">
-              👋 Say hi to start the conversation
+          <div className="glass-card px-8 py-6 rounded-3xl text-center space-y-3">
+            <div className="text-4xl">✨</div>
+            <p className="text-white/60 text-sm font-medium">
+              Start a new chapter.<br/>Say hi to begin.
             </p>
           </div>
         </div>
       )}
       {typingUser && (
-        <div className="px-4 py-2">
-          <div className="inline-block bg-white/70 backdrop-blur-xl px-4 py-2 rounded-2xl shadow text-sm text-gray-600">
-            Typing...
+        <div className="px-4 py-2 mt-2 animate-in slide-in-from-bottom-2 duration-300">
+          <div className="inline-flex items-center gap-2 glass-card px-4 py-2 rounded-2xl shadow-lg border border-white/5">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
+            </div>
+            <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Typing</span>
           </div>
         </div>
       )}

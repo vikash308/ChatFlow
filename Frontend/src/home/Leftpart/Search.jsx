@@ -26,20 +26,21 @@ function Search() {
   };
 
   return (
-    <div className="h-[10vh] flex items-center px-4">
+    <div className="h-[10vh] flex items-center px-6">
       <form onSubmit={handleSubmit} className="w-full">
         <div
           className="
           flex items-center gap-3
-          bg-white/70 backdrop-blur-xl
-          rounded-2xl px-4 py-3
-          shadow-md border border-purple-200
-          focus-within:ring-2 focus-within:ring-purple-300
+          bg-white/5 backdrop-blur-xl
+          rounded-2xl px-5 py-3.5
+          shadow-lg border border-white/5
+          focus-within:ring-2 focus-within:ring-indigo-500/30
+          focus-within:border-indigo-500/30
           transition-all duration-300
           "
         >
           {/* Search Icon */}
-          <FaSearch className="text-purple-500 text-lg" />
+          <FaSearch className="text-indigo-400/70 text-lg" />
 
           {/* Input */}
           <input
@@ -49,7 +50,7 @@ function Search() {
             onChange={(e) => setSearch(e.target.value)}
             className="
             flex-1 bg-transparent outline-none
-            text-gray-700 placeholder-gray-400
+            text-white placeholder-white/30 text-sm
             "
           />
 
@@ -57,9 +58,10 @@ function Search() {
           <button
             type="submit"
             className="
-            px-4 py-1 rounded-xl text-sm font-semibold text-white
-            bg-gradient-to-r from-purple-500 to-pink-500
-            hover:scale-105 hover:shadow-lg
+            px-5 py-1.5 rounded-xl text-xs font-bold text-white
+            premium-gradient
+            hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25
+            active:scale-95
             transition-all duration-300
             "
           >

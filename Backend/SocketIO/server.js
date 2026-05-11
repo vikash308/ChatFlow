@@ -40,6 +40,13 @@ io.on("connection", (socket) => {
     if (receiverSocketId) io.to(receiverSocketId).emit("stopTyping");
   });
 
+  socket.on("markAsRead", async ({ senderId, receiverId }) => {
+    const senderSocketId = getReceiverSocketId(senderId);
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("messagesSeen", { receiverId });
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("a user disconnected", socket.id);
 

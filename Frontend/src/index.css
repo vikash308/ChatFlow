@@ -2,6 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-.flex-1::-webkit-scrollbar {
+@layer base {
+  body {
+    @apply bg-[#0b1326] text-[#dae2fd] antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .glass-pane {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-white/10;
+  }
+  
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  .premium-gradient {
+    @apply bg-gradient-to-br from-[#6366f1] to-[#8b5cf6];
+  }
+
+  .premium-text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-violet-400;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.chat-bubble-incoming {
+  @apply bg-white/10 backdrop-blur-md border border-white/5 rounded-2xl rounded-tl-none;
+}
+
+.chat-bubble-outgoing {
+  @apply premium-gradient shadow-lg shadow-indigo-500/20 rounded-2xl rounded-tr-none text-white;
 }
