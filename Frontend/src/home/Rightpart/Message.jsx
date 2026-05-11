@@ -6,7 +6,8 @@ function Message({ message }) {
   const authUser = JSON.parse(localStorage.getItem("ChatApp"));
   const myId = authUser?.user?._id;
 
-  const itsMe = message.senderId === myId;
+  const senderId = message.senderId?._id || message.senderId;
+  const itsMe = senderId.toString() === myId.toString();
 
   const { deleteForMe, deleteForEveryone } = useDeleteMessage();
 
