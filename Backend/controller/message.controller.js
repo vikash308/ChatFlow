@@ -60,8 +60,10 @@ export const getMessage = async (req, res) => {
     if (!conversation) {
       return res.status(201).json([]);
     }
-    const messages = conversation.messages;
-    res.status(201).json(messages);
+    const filteredMessages = conversation.messages.filter(
+      (msg) => !msg.deletedFor.some((id) => id.toString() === senderId.toString())
+    );
+    res.status(201).json(filteredMessages);
   } catch (error) {
     console.log("Error in getMessage", error);
     res.status(500).json({ error: "Internal server error" });

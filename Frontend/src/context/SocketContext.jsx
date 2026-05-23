@@ -16,6 +16,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (authUser) {
+      console.log("SocketIO connecting to server URL:", server);
       const socket = io(server, {
         transports: ["websocket"],
         query: {

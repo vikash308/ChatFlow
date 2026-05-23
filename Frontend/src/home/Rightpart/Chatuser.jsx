@@ -1,12 +1,14 @@
 import React from "react";
 import useConversation from "../../zustand/useConversation.js";
 import { useSocketContext } from "../../context/SocketContext.jsx";
-import { IoArrowBack } from "react-icons/io5";
+import { useCall } from "../../context/CallContext.jsx";
+import { IoArrowBack, IoCallOutline, IoVideocamOutline } from "react-icons/io5";
 import profile from "../../../public/user.jpg";
 
 function Chatuser() {
   const { selectedConversation, setSelectedConversation } = useConversation();
   const { onlineUsers } = useSocketContext();
+  const { startCall } = useCall();
 
   const getOnlineUsersStatus = (userId) => {
     return onlineUsers.includes(userId) ? "Online" : "Offline";
@@ -78,13 +80,27 @@ function Chatuser() {
         </div>
       </div>
 
-      {/* Action Buttons (Optional/Placeholder) */}
+      {/* Action Buttons */}
       <div className="flex items-center gap-2">
-         <div className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-white/0 hover:border-white/5">
-            <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-white/40 mx-0.5"></div>
-            <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
-         </div>
+        <button 
+          onClick={() => startCall(selectedConversation, "audio")}
+          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 border border-white/0 hover:border-white/5 text-white/75 hover:text-white transition-all duration-300"
+          title="Audio Call"
+        >
+          <IoCallOutline className="text-lg" />
+        </button>
+        <button 
+          onClick={() => startCall(selectedConversation, "video")}
+          className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 border border-white/0 hover:border-white/5 text-white/75 hover:text-white transition-all duration-300"
+          title="Video Call"
+        >
+          <IoVideocamOutline className="text-lg" />
+        </button>
+        <div className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-white/0 hover:border-white/5">
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40 mx-0.5"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+        </div>
       </div>
     </div>
   );

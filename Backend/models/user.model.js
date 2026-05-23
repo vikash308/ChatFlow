@@ -21,6 +21,10 @@ const userSchema = mongoose.Schema({
 
     emailOtp: String,
     emailOtpExpiry: Date,
+    fcmToken: {
+        type: String,
+        default: null,
+    },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

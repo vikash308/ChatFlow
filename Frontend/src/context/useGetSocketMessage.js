@@ -43,14 +43,22 @@ const useGetSocketMessage = () => {
         audio.play().catch(e => console.log("Autoplay blocked"));
       } catch (e) { }
 
-      if (selectedConversation && selectedConversation._id === senderId) {
-        newMessage.isRead = true;
-        socket.emit("markAsRead", { senderId, receiverId: authUser.user._id });
+      const receiverId = newMessage.receiverId?._id || newMessage.receiverId;
+      const isCurrentChat = selectedConversation && 
+        (selectedConversation._id === senderId || selectedConversation._id === receiverId);
+
+      if (isCurrentChat) {
+        if (senderId !== authUser.user._id) {
+          newMessage.isRead = true;
+          socket.emit("markAsRead", { senderId, receiverId: authUser.user._id });
+        }
         setMessage((prev) => [...prev, newMessage]);
       } else {
-        incrementUnreadCount(senderId);
+        if (senderId !== authUser.user._id) {
+          incrementUnreadCount(senderId);
+        }
       }
-      updateLastMessageTime(senderId);
+      updateLastMessageTime(senderId !== authUser.user._id ? senderId : receiverId);
 
       if ("Notification" in window) {
         if (Notification.permission === "granted") {

@@ -275,3 +275,25 @@ export const isVerifiedEmail = async (req, res) => {
     });
   }
 };
+
+export const updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    await User.findByIdAndUpdate(req.user._id, { fcmToken });
+    
+    return res.status(200).json({
+      success: true,
+      message: "FCM token updated successfully",
+    });
+  } catch (error) {
+    console.error("updateFcmToken error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

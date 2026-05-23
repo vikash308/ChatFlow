@@ -8,13 +8,15 @@ import Left from "./Leftpart/Left";
 import Right from "./Rightpart/Right";
 import useGetSocketMessage from "../context/useGetSocketMessage";
 import useConversation from "../zustand/useConversation";
+import { registerFcmToken } from "../firebase";
+import CallInterface from "../components/CallInterface";
 
 function Main() {
   const [authUser, setAuthUser] = useAuth();
   const { selectedConversation } = useConversation();
   const navigate = useNavigate();
   const checkedRef = useRef(false);
-  const email = localStorage.getItem("email")
+  const email = localStorage.getItem("email") || authUser?.user?.email;
 
   // Listen to sockets globally for unread counts and notifications
   useGetSocketMessage();
@@ -23,7 +25,10 @@ function Main() {
     return <Navigate to="/login" />;
   }
 
-  if(!email){
+  if (!email) {
+    localStorage.removeItem("ChatApp");
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("email");
     return <Navigate to="/login" />;
   }
 
@@ -56,6 +61,10 @@ function Main() {
     checkEmailVerification();
   }, [authUser, navigate, setAuthUser]);
 
+  useEffect(() => {
+    registerFcmToken();
+  }, []);
+
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-[#060e20] relative items-stretch">
       {/* Dynamic Background Glows */}
@@ -82,6 +91,9 @@ function Main() {
       >
         <Right />
       </div>
+
+      {/* Global Call Interface */}
+      <CallInterface />
     </div>
   );
 }
