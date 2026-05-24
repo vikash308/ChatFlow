@@ -7,16 +7,15 @@ import {
   IoMicOff, 
   IoVideocam, 
   IoVideocamOff, 
-  IoCloseCircleOutline 
 } from "react-icons/io5";
 import { BiPhoneOff } from "react-icons/bi";
+import { MdScreenShare, MdStopScreenShare } from "react-icons/md";
 import profilePic from "../../public/user.jpg";
 
 function CallInterface() {
   const { onlineUsers } = useSocketContext();
   const {
     callState,
-
     callType,
     caller,
     receiver,
@@ -30,22 +29,44 @@ function CallInterface() {
     endCall,
     toggleMute,
     toggleCamera,
+    toggleScreenShare,
+    isScreenSharing,
   } = useCall();
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  // ✅ FIX 1: Hidden audio element — REQUIRED to actually play remote audio
+  const remoteAudioRef = useRef(null);
 
+  // Set local video stream
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch((e) =>
+        console.warn("Local video play failed:", e)
+      );
     }
-  }, [localStream]);
+  }, [localStream, callState]);
 
+  // Set remote video + audio stream
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteStream) {
+      // Set video stream
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream;
+        remoteVideoRef.current.play().catch((e) =>
+          console.warn("Remote video play failed:", e)
+        );
+      }
+      // Set audio stream
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.play().catch((e) =>
+          console.warn("Remote audio play failed:", e)
+        );
+      }
     }
-  }, [remoteStream]);
+  }, [remoteStream, callState]);
 
   if (callState === "idle") return null;
 
@@ -60,7 +81,10 @@ function CallInterface() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 backdrop-blur-2xl text-white font-sans transition-all duration-300">
-      
+
+      {/* ✅ FIX: Hidden audio element — ALWAYS present, plays remote audio for BOTH audio & video calls */}
+      <audio ref={remoteAudioRef} autoPlay style={{ display: "none" }} />
+
       {/* 1. OUTGOING DIALING STATE */}
       {callState === "calling" && (
         <div className="flex flex-col items-center justify-between h-[80vh] w-full max-w-md p-8 text-center">
@@ -164,15 +188,16 @@ function CallInterface() {
           {/* Call Viewports */}
           {callType === "video" ? (
             <div className="absolute inset-0 w-full h-full bg-black overflow-hidden">
-              {/* Remote stream */}
-              {remoteStream ? (
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-              ) : (
+              {/* ✅ FIX: Remote video ALWAYS rendered — ref attached before stream arrives */}
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+                style={{ display: remoteStream ? "block" : "none" }}
+              />
+              {/* Waiting placeholder — shown only when no remote stream */}
+              {!remoteStream && (
                 <div className="w-full h-full flex items-center justify-center bg-slate-950">
                   <div className="text-center space-y-4">
                     <img
@@ -185,17 +210,17 @@ function CallInterface() {
                 </div>
               )}
 
-              {/* Local stream (floating thumbnail) */}
+              {/* Local stream (floating thumbnail) — ALWAYS rendered with display toggle */}
               <div className="absolute top-8 right-8 z-40 w-32 h-44 rounded-2xl overflow-hidden border border-white/10 bg-slate-900 shadow-2xl transition-all duration-300">
-                {localStream && !isCamOff ? (
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ display: localStream && !isCamOff ? "block" : "none" }}
+                />
+                {(!localStream || isCamOff) && (
                   <div className="w-full h-full flex items-center justify-center bg-slate-900">
                     <IoVideocamOff className="text-2xl text-white/35" />
                   </div>
@@ -249,16 +274,32 @@ function CallInterface() {
 
             {/* Toggle Camera (Only for Video Call) */}
             {callType === "video" && (
-              <button
-                onClick={toggleCamera}
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
-                  isCamOff
-                    ? "bg-rose-500 text-white shadow-lg shadow-rose-900/40"
-                    : "bg-white/10 hover:bg-white/20 text-white"
-                }`}
-              >
-                {isCamOff ? <IoVideocamOff className="text-xl" /> : <IoVideocam className="text-xl" />}
-              </button>
+              <>
+                <button
+                  onClick={toggleCamera}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                    isCamOff
+                      ? "bg-rose-500 text-white shadow-lg shadow-rose-900/40"
+                      : "bg-white/10 hover:bg-white/20 text-white"
+                  }`}
+                  title="Toggle Camera"
+                >
+                  {isCamOff ? <IoVideocamOff className="text-xl" /> : <IoVideocam className="text-xl" />}
+                </button>
+
+                {/* Toggle Screen Share */}
+                <button
+                  onClick={toggleScreenShare}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                    isScreenSharing
+                      ? "bg-indigo-500 text-white shadow-lg shadow-indigo-900/40"
+                      : "bg-white/10 hover:bg-white/20 text-white"
+                  }`}
+                  title={isScreenSharing ? "Stop Screen Share" : "Share Screen"}
+                >
+                  {isScreenSharing ? <MdStopScreenShare className="text-xl" /> : <MdScreenShare className="text-xl" />}
+                </button>
+              </>
             )}
           </div>
         </div>

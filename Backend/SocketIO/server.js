@@ -141,10 +141,11 @@ io.on("connection", (socket) => {
     if (receiverSocketId) {
       console.log(`[Socket IO Server] Routing incoming-call directly to online receiver socket: ${receiverSocketId}`);
       io.to(receiverSocketId).emit("incoming-call", { from, callType });
-    } else {
-      console.log(`[Socket IO Server] Receiver offline. Initiating FCM Push Notification fallback.`);
-      sendPushNotification(to, from._id, from.fullname, callType);
     }
+    
+    // Always trigger FCM Push Notification fallback to alert users whose tabs are backgrounded or devices are locked/offline
+    console.log(`[Socket IO Server] Triggering FCM Push Notification for user ${to}`);
+    sendPushNotification(to, from._id, from.fullname, callType);
   });
 
   // 2. Accept Call
@@ -242,7 +243,11 @@ io.on("connection", (socket) => {
           
           const callerSocketId = getReceiverSocketId(callerId);
           if (callerSocketId) {
-            io.to(callerSocketId).emit("call-rejected", { from: disconnectedUserId });
+            if (call.status === "connected") {
+              io.to(callerSocketId).emit("end-call", { from: disconnectedUserId });
+            } else {
+              io.to(callerSocketId).emit("call-rejected", { from: disconnectedUserId });
+            }
           }
           delete activeCalls[callerId];
         }

@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import io from "socket.io-client";
 import server from "../api";
+import { registerFcmToken } from "../firebase"; // ✅ Import FCM registration
+
 const socketContext = createContext();
 
 // it is a hook.
@@ -27,6 +29,10 @@ export const SocketProvider = ({ children }) => {
       socket.on("getOnlineUsers", (users) => {
         setOnlineUsers(users);
       });
+
+      // ✅ FIX: Register FCM token so offline push notifications work
+      registerFcmToken();
+
       return () => socket.disconnect();
     } else {
       if (socket) {
@@ -35,6 +41,7 @@ export const SocketProvider = ({ children }) => {
       }
     }
   }, [authUser]);
+
   return (
     <socketContext.Provider value={{ socket, onlineUsers }}>
       {children}

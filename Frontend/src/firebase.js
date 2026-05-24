@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import axios from "axios";
 import server from "./api";
 
@@ -18,6 +18,11 @@ if (import.meta.env.VITE_FIREBASE_API_KEY) {
   try {
     const app = initializeApp(firebaseConfig);
     messaging = getMessaging(app);
+    
+    // Log foreground push messages to console for debugging
+    onMessage(messaging, (payload) => {
+      console.log("FCM Foreground message received:", payload);
+    });
   } catch (error) {
     console.error("Firebase initialization failed:", error);
   }
