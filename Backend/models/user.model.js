@@ -25,6 +25,12 @@ const userSchema = mongoose.Schema({
         type: String,
         default: null,
     },
+    blockedUsers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        }
+    ],
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

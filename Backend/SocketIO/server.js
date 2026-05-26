@@ -4,6 +4,7 @@ import express from "express";
 import { sendPushNotification } from "../utils/firebase.js";
 import Message from "../models/message.model.js";
 import Conversation from "../models/conversation.model.js";
+import User from "../models/user.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -124,28 +125,47 @@ io.on("connection", (socket) => {
   // --- Calling Socket Events ---
 
   // 1. Call User
-  socket.on("call-user", ({ to, from, callType }) => {
+  socket.on("call-user", async ({ to, from, callType }) => {
     if (!from || !from._id) return;
     
     console.log(`[Socket IO Server] call-user received from caller ${from._id} (${from.fullname}) targeting receiver ${to}`);
 
-    activeCalls[from._id] = {
-      to,
-      from: from._id,
-      fromName: from.fullname,
-      callType,
-      status: "calling",
-    };
+    try {
+      const senderId = from._id;
+      const receiverId = to;
 
-    const receiverSocketId = getReceiverSocketId(to);
-    if (receiverSocketId) {
-      console.log(`[Socket IO Server] Routing incoming-call directly to online receiver socket: ${receiverSocketId}`);
-      io.to(receiverSocketId).emit("incoming-call", { from, callType });
+      const senderUser = await User.findById(senderId);
+      const receiverUser = await User.findById(receiverId);
+
+      if (
+        (senderUser.blockedUsers && senderUser.blockedUsers.some(id => id.toString() === receiverId.toString())) ||
+        (receiverUser.blockedUsers && receiverUser.blockedUsers.some(id => id.toString() === senderId.toString()))
+      ) {
+        console.log(`[Socket IO Server] Blocked call attempt from ${senderId} to ${receiverId}`);
+        socket.emit("call-rejected", { from: receiverId, reason: "blocked" });
+        return;
+      }
+
+      activeCalls[from._id] = {
+        to,
+        from: from._id,
+        fromName: from.fullname,
+        callType,
+        status: "calling",
+      };
+
+      const receiverSocketId = getReceiverSocketId(to);
+      if (receiverSocketId) {
+        console.log(`[Socket IO Server] Routing incoming-call directly to online receiver socket: ${receiverSocketId}`);
+        io.to(receiverSocketId).emit("incoming-call", { from, callType });
+      }
+      
+      // Always trigger FCM Push Notification fallback to alert users whose tabs are backgrounded or devices are locked/offline
+      console.log(`[Socket IO Server] Triggering FCM Push Notification for user ${to}`);
+      sendPushNotification(to, from._id, from.fullname, callType);
+    } catch (error) {
+      console.error("Error in SocketIO call-user blocking check:", error);
     }
-    
-    // Always trigger FCM Push Notification fallback to alert users whose tabs are backgrounded or devices are locked/offline
-    console.log(`[Socket IO Server] Triggering FCM Push Notification for user ${to}`);
-    sendPushNotification(to, from._id, from.fullname, callType);
   });
 
   // 2. Accept Call

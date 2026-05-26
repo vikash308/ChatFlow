@@ -1,6 +1,7 @@
 import { getReceiverSocketId, io } from "../SocketIO/server.js";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 
 
@@ -9,6 +10,18 @@ export const sendMessage = async (req, res) => {
     const { message } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id; // current logged in user
+
+    const senderUser = await User.findById(senderId);
+    const receiverUser = await User.findById(receiverId);
+
+    if (senderUser.blockedUsers && senderUser.blockedUsers.some(id => id.toString() === receiverId.toString())) {
+      return res.status(400).json({ error: "You have blocked this user" });
+    }
+
+    if (receiverUser.blockedUsers && receiverUser.blockedUsers.some(id => id.toString() === senderId.toString())) {
+      return res.status(400).json({ error: "You are blocked by this user" });
+    }
+
     let conversation = await Conversation.findOne({
       members: { $all: [senderId, receiverId] },
     });
@@ -137,6 +150,31 @@ export const deleteForEveryone = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const clearChat = async (req, res) => {
+  try {
+    const { id: chatUserId } = req.params;
+    const userId = req.user._id;
+
+    // Find all messages in the conversation and mark them as deleted for this user
+    await Message.updateMany(
+      {
+        $or: [
+          { senderId: userId, receiverId: chatUserId },
+          { senderId: chatUserId, receiverId: userId },
+        ],
+      },
+      {
+        $addToSet: { deletedFor: userId },
+      }
+    );
+
+    return res.status(200).json({ success: true, message: "Chat cleared successfully" });
+  } catch (error) {
+    console.log("Error in clearChat", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 

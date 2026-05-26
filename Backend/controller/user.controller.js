@@ -141,11 +141,19 @@ export const allUsers = async (req, res) => {
       lastMessageMap[item._id.toString()] = new Date(item.lastMessageTime).getTime();
     });
 
-    const usersWithExtraData = filteredUsers.map(user => ({
-      ...user,
-      unreadCount: unreadMap[user._id.toString()] || 0,
-      lastMessageTime: lastMessageMap[user._id.toString()] || 0
-    }));
+    const currentUser = await User.findById(loggedInUser).select("blockedUsers");
+    const blockedIds = currentUser?.blockedUsers?.map(id => id.toString()) || [];
+
+    const usersWithExtraData = filteredUsers.map(user => {
+      const blockedByThem = user.blockedUsers && user.blockedUsers.some(id => id.toString() === loggedInUser.toString());
+      return {
+        ...user,
+        isBlocked: blockedIds.includes(user._id.toString()),
+        isBlockedByThem: !!blockedByThem,
+        unreadCount: unreadMap[user._id.toString()] || 0,
+        lastMessageTime: lastMessageMap[user._id.toString()] || 0
+      };
+    });
 
     // Sort users: First by lastMessageTime (descending), then alphabetically
     usersWithExtraData.sort((a, b) => {
@@ -282,9 +290,9 @@ export const updateFcmToken = async (req, res) => {
     if (!req.user || !req.user._id) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    
+
     await User.findByIdAndUpdate(req.user._id, { fcmToken });
-    
+
     return res.status(200).json({
       success: true,
       message: "FCM token updated successfully",
@@ -294,6 +302,54 @@ export const updateFcmToken = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const blockUser = async (req, res) => {
+  try {
+    const { id: targetId } = req.params;
+    const userId = req.user._id;
+
+    if (userId.toString() === targetId.toString()) {
+      return res.status(400).json({ error: "You cannot block yourself" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { blockedUsers: targetId }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User blocked successfully"
+    });
+  } catch (error) {
+    console.error("blockUser error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+export const unblockUser = async (req, res) => {
+  try {
+    const { id: targetId } = req.params;
+    const userId = req.user._id;
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { blockedUsers: targetId }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User unblocked successfully"
+    });
+  } catch (error) {
+    console.error("unblockUser error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
     });
   }
 };
