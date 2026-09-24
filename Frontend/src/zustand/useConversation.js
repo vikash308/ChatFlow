@@ -44,9 +44,13 @@ const useConversation = create(
 
     }),
     {
-      name: "chat-storage",
+      name: "chat-storage-v2",
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ allUsers: state.allUsers }),
+      partialize: (state) => ({ 
+        allUsers: state.allUsers,
+        lastMessageTimes: state.lastMessageTimes,
+        unreadCounts: state.unreadCounts
+      }),
     }
   )
 );
