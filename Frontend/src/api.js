@@ -1,6 +1,6 @@
 let IS_PROD = true;
 const server = IS_PROD ?
-    "https://chatflow-backend-g214.onrender.com" :
+    "https://chat-flow-or88lgrl4-vikashs-projects-1852cd02.vercel.app" :
 
     "http://localhost:3001"
 
