@@ -60,6 +60,9 @@ export const getMessage = async (req, res) => {
   try {
     const { id: chatUser } = req.params;
     const senderId = req.user._id; // current logged in user
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50;
+    const skip = (page - 1) * limit;
 
     // Mark all unread messages from this chatUser to loggedInUser as read
     await Message.updateMany(
@@ -67,16 +70,24 @@ export const getMessage = async (req, res) => {
       { $set: { isRead: true } }
     );
 
-    let conversation = await Conversation.findOne({
-      members: { $all: [senderId, chatUser] },
-    }).populate("messages");
-    if (!conversation) {
-      return res.status(201).json([]);
-    }
-    const filteredMessages = conversation.messages.filter(
-      (msg) => !msg.deletedFor.some((id) => id.toString() === senderId.toString())
-    );
-    res.status(201).json(filteredMessages);
+    // Query messages directly for efficiency, sorting by newest first
+    const messages = await Message.find({
+      $or: [
+        { senderId: senderId, receiverId: chatUser },
+        { senderId: chatUser, receiverId: senderId },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Reverse them to chronological order and filter deleted messages
+    const filteredMessages = messages
+      .filter((msg) => !msg.deletedFor?.some((id) => id.toString() === senderId.toString()))
+      .reverse();
+
+    res.status(200).json(filteredMessages);
   } catch (error) {
     console.log("Error in getMessage", error);
     res.status(500).json({ error: "Internal server error" });

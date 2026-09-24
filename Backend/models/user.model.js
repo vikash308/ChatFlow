@@ -21,10 +21,6 @@ const userSchema = mongoose.Schema({
 
     emailOtp: String,
     emailOtpExpiry: Date,
-    fcmToken: {
-        type: String,
-        default: null,
-    },
     blockedUsers: [
         {
             type: mongoose.Schema.Types.ObjectId,

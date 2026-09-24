@@ -8,7 +8,6 @@ import Left from "./Leftpart/Left";
 import Right from "./Rightpart/Right";
 import useGetSocketMessage from "../context/useGetSocketMessage";
 import useConversation from "../zustand/useConversation";
-import { registerFcmToken } from "../firebase";
 import CallInterface from "../components/CallInterface";
 
 function Main() {
@@ -60,10 +59,6 @@ function Main() {
 
     checkEmailVerification();
   }, [authUser, navigate, setAuthUser]);
-
-  useEffect(() => {
-    registerFcmToken();
-  }, []);
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-[#060e20] relative items-stretch">

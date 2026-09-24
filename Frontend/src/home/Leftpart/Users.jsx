@@ -4,7 +4,7 @@ import useGetAllUsers from "../../context/useGetAllUsers";
 import useConversation from "../../zustand/useConversation";
 import { FaUserPlus } from "react-icons/fa";
 
-function Users() {
+function Users({ onNewChat }) {
   const [allUsers, loading] = useGetAllUsers();
   const { lastMessageTimes } = useConversation();
 
@@ -40,8 +40,11 @@ function Users() {
 
         {!loading && sortedUsers.length === 0 && (
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-            <div className="bg-purple-100 p-4 rounded-full mb-3">
-              <FaUserPlus className="text-purple-500 text-2xl" />
+            <div 
+              onClick={onNewChat}
+              className="bg-indigo-500/10 p-4 rounded-full mb-3 cursor-pointer hover:bg-indigo-500/20 transition-all hover:scale-105 active:scale-95 border border-indigo-500/20 text-indigo-400"
+            >
+              <FaUserPlus className="text-2xl" />
             </div>
             <p className="text-gray-500 text-sm font-medium">No recent chats yet</p>
             <p className="text-gray-400 text-xs mt-1">Click the + icon to start a new conversation!</p>

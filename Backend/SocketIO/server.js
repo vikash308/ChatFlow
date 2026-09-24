@@ -1,7 +1,6 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { sendPushNotification } from "../utils/firebase.js";
 import Message from "../models/message.model.js";
 import Conversation from "../models/conversation.model.js";
 import User from "../models/user.model.js";
@@ -160,9 +159,6 @@ io.on("connection", (socket) => {
         io.to(receiverSocketId).emit("incoming-call", { from, callType });
       }
       
-      // Always trigger FCM Push Notification fallback to alert users whose tabs are backgrounded or devices are locked/offline
-      console.log(`[Socket IO Server] Triggering FCM Push Notification for user ${to}`);
-      sendPushNotification(to, from._id, from.fullname, callType);
     } catch (error) {
       console.error("Error in SocketIO call-user blocking check:", error);
     }

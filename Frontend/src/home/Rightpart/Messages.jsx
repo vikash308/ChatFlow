@@ -7,42 +7,69 @@ import useConversation from "../../zustand/useConversation.js";
 
 
 function Messages() {
-  const { loading, messages } = useGetMessage();
+  const { loading, isFetchingMore, messages, page, setPage, hasMore } = useGetMessage();
   useTypingIndicator();
   const { typingUser } = useConversation();
 
-
   const containerRef = useRef();
+  const previousScrollHeightRef = useRef(0);
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    // If scrolled to top, and not currently fetching, and there are more messages
+    if (containerRef.current.scrollTop === 0 && hasMore && !isFetchingMore && !loading) {
+      previousScrollHeightRef.current = containerRef.current.scrollHeight;
+      setPage((prev) => prev + 1);
+    }
+  };
 
   useEffect(() => {
-    const scrollToBottom = () => {
-      if (containerRef.current) {
-        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    if (!containerRef.current) return;
+
+    if (page === 1) {
+      const scrollToBottom = () => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      };
+      
+      // Scroll immediately and after a short delay for reliability
+      scrollToBottom();
+      const timeoutId = setTimeout(scrollToBottom, 100);
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Restore scroll position after older messages are prepended
+      const newScrollHeight = containerRef.current.scrollHeight;
+      const scrollDiff = newScrollHeight - previousScrollHeightRef.current;
+      if (scrollDiff > 0) {
+        containerRef.current.scrollTop = scrollDiff;
       }
-    };
-    
-    // Scroll immediately and after a short delay for reliability
-    scrollToBottom();
-    const timeoutId = setTimeout(scrollToBottom, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, [messages, loading, typingUser]);
+    }
+  }, [messages, loading, typingUser, page]);
 
   return (
     <div
       ref={containerRef}
-      className="h-full w-full overflow-y-auto px-4 py-6 scroll-smooth"
+      onScroll={handleScroll}
+      className="h-full w-full overflow-y-auto px-4 py-6"
     >
-      {loading ? (
+      {loading && page === 1 ? (
         <div className="flex items-center justify-center h-full">
            <Loading />
         </div>
       ) : messages.length > 0 ? (
-        messages.map((message) => (
-          <div key={message._id}>
-            <Message message={message} />
-          </div>
-        ))
+        <>
+          {isFetchingMore && (
+            <div className="flex justify-center w-full my-2">
+              <span className="loading loading-spinner loading-sm text-indigo-400"></span>
+            </div>
+          )}
+          {messages.map((message) => (
+            <div key={message._id}>
+              <Message message={message} />
+            </div>
+          ))}
+        </>
       ) : (
         <div className="flex items-center justify-center h-full">
           <div className="glass-card px-8 py-6 rounded-3xl text-center space-y-3">

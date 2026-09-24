@@ -5,15 +5,17 @@ import server from "../api";
 import useConversation from "../zustand/useConversation";
 
 function useGetAllUsers() {
-  const [allUsers, setAllUsers] = useState([]);
+  const { allUsers, setAllUsers, setUnreadCounts, setLastMessageTimes } = useConversation();
   const [loading, setLoading] = useState(false);
-  const { setUnreadCounts, setLastMessageTimes } = useConversation();
+
   useEffect(() => {
     const getUsers = async () => {
+      if (allUsers && allUsers.length > 0) return;
+
       setLoading(true);
       try {
-       const token =localStorage.getItem("jwt");
-        const response = await axios.get(server+"/api/user/allusers", {
+        const token = localStorage.getItem("jwt");
+        const response = await axios.get(server + "/api/user/allusers", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -32,10 +34,19 @@ function useGetAllUsers() {
         setLoading(false);
       } catch (error) {
         console.log("Error in useGetAllUsers: " + error);
+        if (error.response && error.response.status === 401) {
+          localStorage.removeItem("ChatApp");
+          localStorage.removeItem("jwt");
+          localStorage.removeItem("email");
+          Cookies.remove("jwt");
+          window.location.reload();
+        }
+        setLoading(false);
       }
     };
     getUsers();
-  }, []);
+  }, [allUsers, setAllUsers, setUnreadCounts, setLastMessageTimes]);
+
   return [allUsers, loading];
 }
 

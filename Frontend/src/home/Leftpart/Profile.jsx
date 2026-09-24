@@ -18,6 +18,7 @@ function Profile() {
       await axios.post(server + "/api/user/logout");
       localStorage.removeItem("ChatApp");
       localStorage.removeItem("email");
+      localStorage.removeItem("jwt");
       Cookies.remove("jwt");
       setLoading(false);
       toast.success("Logged out successfully");

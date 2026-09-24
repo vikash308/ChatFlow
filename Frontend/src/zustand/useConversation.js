@@ -1,6 +1,11 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-const useConversation = create((set) => ({
+const useConversation = create(
+  persist(
+    (set) => ({
+  allUsers: [],
+  setAllUsers: (users) => set({ allUsers: users }),
   selectedConversation: null,
   setSelectedConversation: (selectedConversation) =>
     set({ selectedConversation }),
@@ -37,5 +42,12 @@ const useConversation = create((set) => ({
     }
   })),
 
-}));
+    }),
+    {
+      name: "chat-storage",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({ allUsers: state.allUsers }),
+    }
+  )
+);
 export default useConversation;
